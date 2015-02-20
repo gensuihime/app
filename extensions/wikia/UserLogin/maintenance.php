@@ -110,7 +110,7 @@
 				'user_email_authenticated' => NULL,
 				'up_property' => UserLoginSpecialController::NOT_CONFIRMED_SIGNUP_OPTION_NAME,
 				'up_value' => 1,
-				'date(user_registration) < curdate() - interval 30 day'
+				'date(user_registration) <= curdate()'
 			),
 			__METHOD__,
 			array(),
@@ -179,9 +179,9 @@
 	function autoConfirmABTestUsers() {
 		$users = getOldUnconfirmedUsers();
 		foreach( $users as $user ) {
-			print $user->getId();
 			if ( $user->getOption( UserLoginSpecialController::NOT_CONFIRMED_LOGIN_OPTION_NAME ) == UserLoginSpecialController::NOT_CONFIRMED_LOGIN_ALLOWED ) {
-				print ' not confirmed';
+				print $user->getId();
+				$user->confirmEmail();
 				UserLoginHelper::removeNotConfirmedFlag($user);
 			}
 			print "\n";
@@ -228,7 +228,7 @@
 
 	require_once( "commandLine.inc" );
 
-	if ( isset($options['help']) || !(isset($options['cleanup']) || !(isset($options['autoconfirm']) || isset($options['reminder']) || isset($options['wiki_reminder'])) ) {
+	if ( isset($options['help']) || !(isset($options['cleanup']) || isset($options['autoconfirm']) || isset($options['reminder']) || isset($options['wiki_reminder'])) ) {
 		die( "Usage: php maintenance.php [--cleanup] [--reminder] [--wiki_reminder] [--help]
 		--cleanup			remove older temp user (user's registered date is older than 30 days)
 		--reminder			send reminder (user's registered date = 7 days ago) for ALL wikis
