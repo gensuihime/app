@@ -1,7 +1,7 @@
 <?php
 
 	/**
-	 * Maintenance script to 
+	 * Maintenance script to
 	 *    - remove old not confirmed users (user's registered date > 30 days)
 	 *    - run reminder process: get list of wikis and send reminder for each wiki
 	 *    - send reminder (user's registered date = 7 days) for current wiki ONLY
@@ -12,7 +12,7 @@
 
 	/**
 	 * Get list of wikis for sending reminder (user's registered date = 7 days)
-	 * 
+	 *
 	 * @return array $wikis
 	 */
 	function getWikis() {
@@ -48,7 +48,7 @@
 	 * - users created on current wiki ($wgCityId)
 	 * - users signed up 7 days ago
 	 * - users with NotConfirmedSignup property set to 1
-	 * 
+	 *
 	 * @return $recepients Array of Users
 	 */
 	function getRecipientsForCurrentWiki() {
@@ -94,7 +94,7 @@
 	 * - user email not authenticated
 	 * - NotConfirmedSignup property set to 1
 	 * - users signed up > 30 days ago
-	 * 
+	 *
 	 * @return $oldUnconfirmed Array of Users
 	 */
 	function getOldUnconfirmedUsers() {
@@ -133,7 +133,7 @@
 
 	/**
 	 * Remove users that weren't confirmed for 30days after signup
-	 * 
+	 *
 	 */
 	function removeOldUnconfirmed() {
 		global $wgExternalSharedDB;
@@ -176,6 +176,18 @@
 		wfProfileOut( __METHOD__ );
 	}
 
+	function autoConfirmABTestUsers() {
+		$users = getOldUnconfirmedUsers();
+		foreach( $users as $user ) {
+			print $user->getId();
+			if ( $user->getOption( UserLoginSpecialController::NOT_CONFIRMED_LOGIN_OPTION_NAME ) == UserLoginSpecialController::NOT_CONFIRMED_LOGIN_ALLOWED ) {
+				print ' not confirmed';
+				UserLoginHelper::removeNotConfirmedFlag($user);
+			}
+			print "\n";
+		}
+	}
+
 	/**
 	 * Send confirmation reminder emails for users that signed up on current wiki 7 days ago
 	 */
@@ -216,7 +228,7 @@
 
 	require_once( "commandLine.inc" );
 
-	if ( isset($options['help']) || !(isset($options['cleanup']) || isset($options['reminder']) || isset($options['wiki_reminder'])) ) {
+	if ( isset($options['help']) || !(isset($options['cleanup']) || !(isset($options['autoconfirm']) || isset($options['reminder']) || isset($options['wiki_reminder'])) ) {
 		die( "Usage: php maintenance.php [--cleanup] [--reminder] [--wiki_reminder] [--help]
 		--cleanup			remove older temp user (user's registered date is older than 30 days)
 		--reminder			send reminder (user's registered date = 7 days ago) for ALL wikis
@@ -231,6 +243,10 @@
 	// remove old temp user
 	if ( isset($options['cleanup']) ) {
 		removeOldUnconfirmed();
+	}
+
+	if ( isset($options['autoconfirm']) ) {
+		autoConfirmABTestUsers();
 	}
 
 	// send reminder for all wikis
