@@ -32,12 +32,12 @@ define('ext.wikia.adEngine.adConfigMobile', [
 			return [taboola];
 		}
 
-		if (instantGlobals && instantGlobals.wgSitewideDisableGpt) {
-			return [];
-		}
-
 		if (context.providers.turtle) {
 			return [turtle, remnantGptMobile];
+		}
+
+		if (instantGlobals && instantGlobals.wgSitewideDisableGpt) {
+			return [];
 		}
 
 		return [directGptMobile, remnantGptMobile];
