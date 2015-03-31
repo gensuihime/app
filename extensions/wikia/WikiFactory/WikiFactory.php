@@ -1273,6 +1273,15 @@ class WikiFactory {
 			return [];
 		}
 
+		if ( !is_array( $ids ) ) {
+			WikiaLogger::instance()->debug( "WikiFactory::getWikisByID supplied with a non-array argument", [
+				'exception' => new Exception(),
+				'arguments_ids' => $ids,
+			]);
+
+			return [];
+		}
+
 		global $wgWikiFactoryCacheType;
 		$oMemc = wfGetCache( $wgWikiFactoryCacheType );
 
